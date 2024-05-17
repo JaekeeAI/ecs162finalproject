@@ -98,6 +98,7 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 app.get('/', (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
+    console.log(req.session.timestamp);
     res.render('home', { posts, user });
 });
 
@@ -139,12 +140,15 @@ app.get('/avatar/:username', (req, res) => {
 });
 app.post('/register', (req, res) => {
     // TODO: Register a new user
+    registerUser(req, res);
 });
 app.post('/login', (req, res) => {
     // TODO: Login a user
+    loginUser(req, res);
 });
 app.get('/logout', (req, res) => {
     // TODO: Logout the user
+    logoutUser(req, res);
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
@@ -175,11 +179,23 @@ let users = [
 // Function to find a user by username
 function findUserByUsername(username) {
     // TODO: Return user object if found, otherwise return undefined
+    for (let i = 0; i < users.length; i++){
+        if (users[i].username == username){
+            return users[i];
+        }
+    }
+    return undefined;
 }
 
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    for (let i = 0; i < users.length; i++){
+        if (users[i].id == userId){
+            return users[i];
+        }
+    }
+    return undefined;
 }
 
 // Function to add a new user
@@ -200,16 +216,43 @@ function isAuthenticated(req, res, next) {
 // Function to register a user
 function registerUser(req, res) {
     // TODO: Register a new user and redirect appropriately
+    if (findUserByUsername(req.body.username)) {
+        res.redirect("/register?error=Username+taken");
+    } else {
+        let newUser = {id: users.length, username: req.body.username,
+            avatar_url: undefined, memberSince: req.session.timestamp
+        };
+        users.push(newUser);
+        res.redirect("/login");
+    }
 }
 
 // Function to login a user
 function loginUser(req, res) {
     // TODO: Login a user and redirect appropriately
+    let user = findUserByUsername(req.body.username);
+    if (user){
+        console.log("logged in");
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        res.redirect("/");
+    } else {
+        console.log("this is not a registered name");
+        res.redirect("/login?error=Invalid+username");
+    }
 }
 
 // Function to logout a user
 function logoutUser(req, res) {
     // TODO: Destroy session and redirect appropriately
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error destroying session', err);
+            res.redirect('/error');
+        } else {
+            res.redirect('/');
+        }
+    });
 }
 
 // Function to render the profile page
