@@ -98,7 +98,6 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 app.get('/', (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
-    console.log(req.session.timestamp);
     res.render('home', { posts, user });
 });
 
@@ -128,6 +127,8 @@ app.get('/post/:id', (req, res) => {
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
+    addPost(req.body.title, req.body.postBody, getCurrentUser(req));
+    res.redirect("/");
 });
 app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
@@ -162,6 +163,7 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,6 +177,9 @@ let users = [
     { id: 1, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
     { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
 ];
+
+// console.log(getPosts());
+
 
 // Function to find a user by username
 function findUserByUsername(username) {
@@ -201,6 +206,10 @@ function findUserById(userId) {
 // Function to add a new user
 function addUser(username) {
     // TODO: Create a new user object and add to users array
+    let newUser = {id: users.length, username: username,
+        avatar_url: undefined, memberSince: new Date()
+    };
+    users.push(newUser);
 }
 
 // Middleware to check if user is authenticated
@@ -216,13 +225,11 @@ function isAuthenticated(req, res, next) {
 // Function to register a user
 function registerUser(req, res) {
     // TODO: Register a new user and redirect appropriately
+    const username = req.body.username;
     if (findUserByUsername(req.body.username)) {
         res.redirect("/register?error=Username+taken");
     } else {
-        let newUser = {id: users.length, username: req.body.username,
-            avatar_url: undefined, memberSince: req.session.timestamp
-        };
-        users.push(newUser);
+        addUser(username);
         res.redirect("/login");
     }
 }
@@ -273,6 +280,7 @@ function handleAvatar(req, res) {
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
+    return findUserById(req.session.userId);
 }
 
 // Function to get all posts, sorted by latest first
@@ -283,6 +291,12 @@ function getPosts() {
 // Function to add a new post
 function addPost(title, content, user) {
     // TODO: Create a new post object and add to posts array
+    // { id: 2, title: 'Another Post', content: 'This is another sample
+    //  post.', username: 'AnotherUser', 
+    // timestamp: '2024-01-02 12:00', likes: 0 },
+    const newPost = {id: posts.length, title: title, content: content,
+    username: user.username, timestamp: (new Date()), likes: 0};
+    posts.push(newPost);
 }
 
 // Function to generate an image avatar

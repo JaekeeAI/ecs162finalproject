@@ -7,9 +7,10 @@
         <!-- show the create post form when logged in -->
         <section class="post-form">
             <!-- make a header here -->
-            <input type="text" name="title">
+            
             <form action="/posts" method="POST">
-                <input type="text" name="post-body">
+                <input type="text" name="title">
+                <input type="text" name="postBody">
                 <!-- title input field name = "title" -->
                 <!-- text area input field name = "content" -->
 
@@ -38,6 +39,7 @@
         </ul>
         {{else}}
             <!-- no posts, oh no, what now? -->
+            <p>No posts now</p>
         {{/if}}
     </section>
 </section>
