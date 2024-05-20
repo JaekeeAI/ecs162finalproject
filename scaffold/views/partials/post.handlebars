@@ -10,22 +10,41 @@
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥ -->
-            {{#if user}}
-                <button onclick="handleLikeClick">♥</button>
+            {{!-- <p>name comparision: {{this.username}} {{user.username}}</p> --}}
+            {{#ifCond user.username this.username}}
+                <button id="delete-button"><i class="fas fa-trash-alt"> </i></button>
             {{else}}
-                <button onclick="handleDeleteClick"><i class="fas fa-trash-alt"> </i></button>
-            {{/if}}
+                <button id="like-button" data-id={{this.id}}>♥</button>
+            {{/ifCond}}
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+            <h3>{{this.likes}} Likes</h3>
             <h3>Posted by {{this.username}} on {{this.timestamp}}</h3>
         </div>        
     </div>
 </div>
 <script>
-
+    console.log("h1");
+    document.getElementById("like-button").addEventListener("click", handleLikeClick);
+    
     function handleLikeClick(event) {
+        console.log("updating like");
         const postId = event.target.getAttribute('data-id');
 
-        // you might want to "fetch" something...        
+        // you might want to "fetch" something...
+        console.log(postId);
+        var items = {
+            id: postId
+        };
+
+        var data = new FormData();
+        data.append( "json", JSON.stringify( items ) );
+
+        fetch("/like/:" + postId,
+        {
+            method: "POST",
+            body: data
+        })
+
     }
 
     function handleDeleteClick(event) {

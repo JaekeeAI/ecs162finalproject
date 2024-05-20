@@ -132,6 +132,7 @@ app.post('/posts', (req, res) => {
 });
 app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
+    console.log(req.body);
 });
 app.get('/profile', isAuthenticated, (req, res) => {
     // TODO: Render profile page
@@ -206,7 +207,7 @@ function findUserById(userId) {
 // Function to add a new user
 function addUser(username) {
     // TODO: Create a new user object and add to users array
-    let newUser = {id: users.length, username: username,
+    let newUser = {id: users.length + 1, username: username,
         avatar_url: undefined, memberSince: new Date()
     };
     users.push(newUser);
@@ -239,12 +240,10 @@ function loginUser(req, res) {
     // TODO: Login a user and redirect appropriately
     let user = findUserByUsername(req.body.username);
     if (user){
-        console.log("logged in");
         req.session.userId = user.id;
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
-        console.log("this is not a registered name");
         res.redirect("/login?error=Invalid+username");
     }
 }
