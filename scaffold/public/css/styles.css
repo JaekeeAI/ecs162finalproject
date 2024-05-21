@@ -229,7 +229,6 @@ button:hover {
     height: 20px;
 }
 
-
 .post-avatar {
     flex-shrink: 0;
     margin-right: 20px;
@@ -324,5 +323,37 @@ button:hover {
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Emoji Panel Styles */
+.emoji-panel {
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    border-radius: 10px;
+    position: absolute;
+    z-index: 1000;
+}
+
+.emoji-panel input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.emoji-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.emoji-grid span {
+    font-size: 24px;
     cursor: pointer;
 }
