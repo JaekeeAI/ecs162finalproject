@@ -357,13 +357,15 @@ function getCurrentUser(req) {
 function getPosts() {
     return posts.map(post => {
         const user = findUserByUsername(post.username);
+        const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${post.username}`;
         return {
             ...post,
-            avatar_url: user ? user.avatar_url : `/avatar/${user.username}`,
+            avatar_url: avatarUrl,
             timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
         };
     }).reverse();
 }
+
 
 // Helper function to format dates
 function formatDate(date) {
