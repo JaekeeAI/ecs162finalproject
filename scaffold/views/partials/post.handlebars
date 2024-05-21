@@ -19,12 +19,11 @@
         <p>{{this.content}}</p>
         <!-- Post Footer -->
         <div class="post-footer">
-            <span>Posted by {{this.username}} on {{this.timestamp}}</span>
+            <span>Posted by {{this.username}} on {{formatDate this.timestamp}}</span>
             <span class="like-count">{{this.likes}} Likes</span>
         </div>
     </div>
 </div>
-
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -84,6 +83,3 @@
         .catch(error => console.error('Error:', error));
     }
 </script>
-
-
-

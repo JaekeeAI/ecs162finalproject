@@ -359,9 +359,16 @@ function getPosts() {
         const user = findUserByUsername(post.username);
         return {
             ...post,
-            avatar_url: user ? user.avatar_url : `/avatar/${user.username}`
+            avatar_url: user ? user.avatar_url : `/avatar/${user.username}`,
+            timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
         };
     }).reverse();
+}
+
+// Helper function to format dates
+function formatDate(date) {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true };
+    return new Date(date).toLocaleString('en-US', options).replace(',', '');
 }
 
 
@@ -382,6 +389,7 @@ function addPost(title, content, user) {
     };
     posts.push(newPost);
 }
+
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
