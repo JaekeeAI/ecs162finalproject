@@ -1,3 +1,328 @@
-/* * {
-    background-color: aqua;
-} */
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #4A90E2;
+    color: white;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+header .logo {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+header .logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+header nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+header nav ul li {
+    margin: 0 10px;
+}
+
+header nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+header nav ul li a:hover {
+    text-decoration: underline;
+}
+
+main {
+    flex: 1;
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 120px; /* Ensure enough space for the fixed header */
+    margin-bottom: 120px; /* Ensure enough space for the fixed footer */
+    overflow-y: auto; /* Make the main content scrollable */
+}
+
+h1, h2 {
+    color: #333;
+}
+
+footer {
+    background-color: #4A90E2;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* Login/Register Styles */
+.login-register {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+.login-register section {
+    width: 45%;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4A90E2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #357ABD;
+}
+
+/* Home and Posts Styles */
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.post-form-container {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-right: 20px;
+}
+
+.post-form input[type="text"], 
+.post-form textarea {
+    width: 100%;
+    margin-bottom: 10px; /* Space between form fields */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.post-form textarea {
+    height: 100px; /* Adjust height as needed */
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.emoji-button, .post-button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.emoji-button {
+    background-color: #FFD700; /* Emoji button color */
+}
+
+.post-button {
+    background-color: #4A90E2;
+    color: white;
+}
+
+.post-button:hover {
+    background-color: #357ABD;
+}
+
+.posts-list {
+    width: 65%; /* Adjust width as needed */
+}
+
+/* Ensure posts list is separated from form */
+.posts-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.post {
+    display: flex;
+    align-items: flex-start;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    max-width: 600px;
+}
+
+.post:hover {
+    transform: translateY(-5px);
+}
+
+.header-avatar {
+    border-radius: 10px;
+    width: 20px;
+    height: 20px;
+}
+
+
+.post-avatar {
+    flex-shrink: 0;
+    margin-right: 20px;
+}
+
+.post-avatar img {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+}
+
+.post-content {
+    flex-grow: 1;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.post-buttons button {
+    margin-left: 10px;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.post-status-bar h3 {
+    margin: 0 10px 0 0;
+}
+
+.post-status-bar button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #4A90E2;
+    font-size: 16px;
+}
+
+.post-status-bar button:hover {
+    color: red;
+}
+
+/* Profile Styles */
+.profile-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.profile-avatar img {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-info {
+    flex-grow: 1;
+}
+
+.user-posts ul {
+    list-style: none;
+    padding: 0;
+}
+
+.user-posts ul li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+/* Additional Styles for Button */
+.btn-like {
+    background-color: #FF4136;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-delete {
+    background-color: #001f3f;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

@@ -2,65 +2,50 @@
 {{!< main }}
 
 {{! New Post Submission Form }}
-<section class="content-container">
-    {{#if loggedIn}}
-        <!-- show the create post form when logged in -->
+<section class="container">
+    <div class="left-box">
         <section class="post-form">
-            <!-- make a header here -->
-            
             <form action="/posts" method="POST">
-                <input type="text" name="title">
-                <input type="text" name="postBody">
-                <!-- title input field name = "title" -->
-                <!-- text area input field name = "content" -->
-
+                <input type="text" name="title" placeholder="Title">
+                <textarea name="postBody" placeholder="What's on your mind?"></textarea>
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
                     <button type="submit" class="post-button">Post</button>
                 </div>
             </form>
-
             <div id="emoji-container" class="emoji-panel" style="display: none;">
-                <!-- input field for the emoji search, use oninput="searchEmojis() -->
-                <!-- a div, id = "emoji-grid" -->
+                <!-- Emoji panel content -->
             </div>
         </section>
-    {{/if}}
+    </div>
 
     <section class="posts-list">
         <!-- recent posts -->
-
         {{#if posts.length}}
         <ul>
             {{#each posts}}
-                <!-- you have to pass the user in to posts and this is the syntax -->
                 {{> post this user=../user}}            
             {{/each}}
         </ul>
         {{else}}
-            <!-- no posts, oh no, what now? -->
             <p>No posts now</p>
         {{/if}}
     </section>
 </section>
 
-
 {{! JavaScript for Emoji Integration }}
 <script>
-
 /*
  You want to show a subset of the emojis. About 200. However,
  you also want the user to be able to search all emojis,
  so, put them in this array when the array is empty so 
  that you have them.
 */
-
 let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
     const container = document.getElementById('emoji-container');
     container.style.display = container.style.display === 'none' ? 'block' : 'none';
-
 
     if(container.style.display === 'block' && allEmojis.length == 0){
         // go "Fetch" you some emojis and show them off with displayEmojies
@@ -102,4 +87,3 @@ function insertEmoji(emoji) {
     textarea.focus();  // Keep focus on the textarea
 }
 </script>
-

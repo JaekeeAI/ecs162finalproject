@@ -1,7 +1,7 @@
 const express = require('express');
 const expressHandlebars = require('express-handlebars');
 const session = require('express-session');
-const canvas = require('canvas');
+const { createCanvas } = require('canvas');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -119,27 +119,42 @@ app.get('/error', (req, res) => {
     res.render('error');
 });
 
+
 // Additional routes that you must implement
 
-
+/*
 app.get('/post/:id', (req, res) => {
     // TODO: Render post detail page
 });
+*/
+
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
     addPost(req.body.title, req.body.postBody, getCurrentUser(req));
     res.redirect("/");
 });
-app.post('/like/:id', (req, res) => {
-    // TODO: Update post likes
-    console.log(req.body);
+
+app.post('/like/:id', isAuthenticated, (req, res) => {
+    updatePostLikes(req, res);
 });
+
 app.get('/profile', isAuthenticated, (req, res) => {
     // TODO: Render profile page
 });
+
 app.get('/avatar/:username', (req, res) => {
-    // TODO: Serve the avatar image for the user
+    const username = req.params.username;
+    const user = findUserByUsername(username);
+    if (user) {
+        const firstLetter = username.charAt(0).toUpperCase();
+        const avatarBuffer = generateAvatar(firstLetter);
+        res.setHeader('Content-Type', 'image/png');
+        res.send(avatarBuffer);
+    } else {
+        res.status(404).send('User not found');
+    }
 });
+
 app.post('/register', (req, res) => {
     // TODO: Register a new user
     registerUser(req, res);
@@ -152,9 +167,23 @@ app.get('/logout', (req, res) => {
     // TODO: Logout the user
     logoutUser(req, res);
 });
+
 app.post('/delete/:id', isAuthenticated, (req, res) => {
-    // TODO: Delete a post if the current user is the owner
+    const postId = parseInt(req.params.id, 10);
+    const user = getCurrentUser(req);
+
+    // Find the post and check if the current user is the owner
+    const postIndex = posts.findIndex(post => post.id === postId && post.username === user.username);
+
+    if (postIndex !== -1) {
+        // Remove the post from the array
+        posts.splice(postIndex, 1);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: "Post not found or you're not authorized to delete this post" });
+    }
 });
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Server Activation
@@ -181,41 +210,42 @@ let users = [
 
 // console.log(getPosts());
 
-
-// Function to find a user by username
-function findUserByUsername(username) {
-    // TODO: Return user object if found, otherwise return undefined
-    for (let i = 0; i < users.length; i++){
-        if (users[i].username == username){
-            return users[i];
-        }
+function addLikedPost(userId, postId) {
+    const user = findUserById(userId);
+    if (user && !user.likedPosts.includes(postId)) {
+        user.likedPosts.push(postId);
     }
-    return undefined;
 }
 
-// Function to find a user by user ID
+function hasLikedPost(userId, postId) {
+    const user = findUserById(userId);
+    return user && user.likedPosts.includes(postId);
+}
+
+function findUserByUsername(username) {
+    return users.find(user => user.username === username);
+}
+
 function findUserById(userId) {
-    // TODO: Return user object if found, otherwise return undefined
-    for (let i = 0; i < users.length; i++){
-        if (users[i].id == userId){
-            return users[i];
-        }
-    }
-    return undefined;
+    return users.find(user => user.id === userId);
 }
 
 // Function to add a new user
 function addUser(username) {
-    // TODO: Create a new user object and add to users array
-    let newUser = {id: users.length + 1, username: username,
-        avatar_url: undefined, memberSince: new Date()
+    const avatarUrl = `/avatar/${username}`;
+    const newUser = {
+        id: users.length + 1,
+        username: username,
+        avatar_url: avatarUrl,
+        memberSince: new Date(),
+        likedPosts: []
     };
     users.push(newUser);
 }
 
+
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log(req.session.userId);
     if (req.session.userId) {
         next();
     } else {
@@ -263,13 +293,42 @@ function logoutUser(req, res) {
 
 // Function to render the profile page
 function renderProfile(req, res) {
-    // TODO: Fetch user posts and render the profile page
+    const user = getCurrentUser(req);
+    if (user) {
+        const userPosts = posts.filter(post => post.username === user.username);
+        res.render('profile', { user, posts: userPosts });
+    } else {
+        res.redirect('/login');
+    }
 }
 
 // Function to update post likes
 function updatePostLikes(req, res) {
-    // TODO: Increment post likes if conditions are met
+    const postId = parseInt(req.params.id, 10);
+    const user = getCurrentUser(req);
+
+    // Find the post
+    const post = posts.find(post => post.id === postId);
+
+    if (!post) {
+        return res.json({ success: false, message: "Post not found" });
+    }
+
+    if (post.username === user.username) {
+        return res.json({ success: false, message: "You cannot like your own post" });
+    }
+
+    if (hasLikedPost(user.id, postId)) {
+        return res.json({ success: false, message: "You have already liked this post" });
+    }
+
+    // Increment the like count and save the post ID in the user's liked posts
+    post.likes += 1;
+    addLikedPost(user.id, postId);
+
+    return res.json({ success: true, likes: post.likes });
 }
+
 
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
@@ -284,8 +343,15 @@ function getCurrentUser(req) {
 
 // Function to get all posts, sorted by latest first
 function getPosts() {
-    return posts.slice().reverse();
+    return posts.map(post => {
+        const user = findUserByUsername(post.username);
+        return {
+            ...post,
+            avatar_url: user ? user.avatar_url : `/avatar/${user.username}`
+        };
+    }).reverse();
 }
+
 
 // Function to add a new post
 function addPost(title, content, user) {
@@ -293,8 +359,15 @@ function addPost(title, content, user) {
     // { id: 2, title: 'Another Post', content: 'This is another sample
     //  post.', username: 'AnotherUser', 
     // timestamp: '2024-01-02 12:00', likes: 0 },
-    const newPost = {id: posts.length, title: title, content: content,
-    username: user.username, timestamp: (new Date()), likes: 0};
+    const newPost = {
+        id: posts.length + 1,
+        title: title,
+        content: content,
+        username: user.username,
+        timestamp: new Date().toISOString(),
+        likes: 0,
+        avatar_url: user.avatar_url || `/avatar/${user.username}`
+    };
     posts.push(newPost);
 }
 
@@ -307,4 +380,29 @@ function generateAvatar(letter, width = 100, height = 100) {
     // 3. Draw the background color
     // 4. Draw the letter in the center
     // 5. Return the avatar as a PNG buffer
+
+     // 1. Choose a color scheme based on the letter
+    const colors = [
+        '#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33A6', '#33FFF3',
+    ];
+    const color = colors[letter.charCodeAt(0) % colors.length];
+
+    // 2. Create a canvas with the specified width and height
+    const canvas = createCanvas(width, height);
+    const context = canvas.getContext('2d');
+
+    // 3. Draw the background color
+    context.fillStyle = color;
+    context.fillRect(0, 0, width, height);
+
+    // 4. Draw the letter in the center
+    context.fillStyle = '#FFFFFF';
+    context.font = `${width / 2}px sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(letter, width / 2, height / 2);
+
+    // 5. Return the avatar as a PNG buffer
+    return canvas.toBuffer('image/png');
 }
+
