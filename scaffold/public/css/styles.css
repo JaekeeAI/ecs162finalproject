@@ -357,3 +357,46 @@ button:hover {
     font-size: 24px;
     cursor: pointer;
 }
+
+/* Profile Styles */
+.profile-container {
+    display: flex;
+    align-items: flex-start;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.profile-avatar img {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-info {
+    flex-grow: 1;
+}
+
+.profile-info h2 {
+    margin: 0;
+    color: #4A90E2;
+}
+
+.profile-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.user-posts ul {
+    list-style: none;
+    padding: 0;
+}
+
+.user-posts ul li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+

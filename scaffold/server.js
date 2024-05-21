@@ -38,6 +38,7 @@ const PORT = 3000;
 
 // Set up Handlebars view engine with custom helpers
 //
+// Set up Handlebars view engine with custom helpers
 app.engine(
     'handlebars',
     expressHandlebars.engine({
@@ -51,9 +52,14 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-        },
+            formatDate: function (date) {
+                const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true };
+                return new Date(date).toLocaleString('en-US', options).replace(',', '');
+            }
+        }
     })
 );
+
 
 app.set('view engine', 'handlebars');
 app.set('views', './views');
@@ -139,7 +145,13 @@ app.post('/like/:id', isAuthenticated, (req, res) => {
 });
 
 app.get('/profile', isAuthenticated, (req, res) => {
-    // TODO: Render profile page
+    const user = getCurrentUser(req);
+    if (user) {
+        const userPosts = posts.filter(post => post.username === user.username);
+        res.render('profile', { user, posts: userPosts });
+    } else {
+        res.redirect('/login');
+    }
 });
 
 app.get('/avatar/:username', (req, res) => {
