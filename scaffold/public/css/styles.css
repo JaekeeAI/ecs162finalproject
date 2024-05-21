@@ -9,6 +9,10 @@ body {
     min-height: 100vh;
 }
 
+.recent-post {
+    text-align: center;
+}
+
 header {
     background-color: #4A90E2;
     color: white;

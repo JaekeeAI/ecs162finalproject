@@ -1,8 +1,8 @@
 {{! Use the main layout }}
 {{!< main }}
 
-{{! New Post Submission Form }}
 <section class="container">
+    {{#if loggedIn}}
     <div class="left-box">
         <section class="post-form">
             <form action="/posts" method="POST">
@@ -19,6 +19,7 @@
             </div>
         </section>
     </div>
+    {{/if}}
 
     <section class="posts-list">
         <!-- recent posts -->
