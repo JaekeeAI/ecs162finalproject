@@ -5,9 +5,9 @@
     {{#if loggedIn}}
     <div class="left-box">
         <section class="post-form">
-            <form action="/posts" method="POST">
-                <input type="text" name="title" placeholder="Title">
-                <textarea name="postBody" id="postBody" placeholder="What's on your mind?"></textarea>
+            <form id="postForm" action="/posts" method="POST" onsubmit="return validateForm()">
+                <input type="text" name="title" id="title" placeholder="Title" required>
+                <textarea name="postBody" id="postBody" placeholder="What's on your mind?" required></textarea>
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
                     <button type="submit" class="post-button">Post</button>
@@ -59,7 +59,7 @@ function toggleEmojiPanel() {
 
 async function fetchEmojis() {
     try {
-        const response = await fetch('https://emoji-api.com/emojis?access_key=bcf4bffbf30277b866c8f623bb149acad5308ec5'); // Replace YOUR_ACCESS_KEY with your actual API key
+        const response = await fetch('https://emoji-api.com/emojis?access_key=YOUR_API_KEY'); 
         const emojis = await response.json();
         allEmojis = emojis.map(emoji => ({
             character: emoji.character,
@@ -149,5 +149,16 @@ function handleLikeClick(event) {
         }
     })
     .catch(error => console.error('Error:', error));
+}
+
+function validateForm() {
+    const title = document.getElementById('title').value.trim();
+    const postBody = document.getElementById('postBody').value.trim();
+    
+    if (title === '' || postBody === '') {
+        alert('Title and post content cannot be empty.');
+        return false;
+    }
+    return true;
 }
 </script>

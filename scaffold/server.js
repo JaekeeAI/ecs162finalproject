@@ -81,7 +81,7 @@ app.use(
 // should be used in your template files. 
 // 
 app.use((req, res, next) => {
-    res.locals.appName = 'MicroBlog';
+    res.locals.appName = 'IBlog';
     res.locals.copyrightYear = 2024;
     res.locals.postNeoType = 'Post';
     res.locals.loggedIn = req.session.loggedIn || false;
@@ -357,13 +357,15 @@ function getCurrentUser(req) {
 function getPosts() {
     return posts.map(post => {
         const user = findUserByUsername(post.username);
+        const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${post.username}`;
         return {
             ...post,
-            avatar_url: user ? user.avatar_url : `/avatar/${user.username}`,
+            avatar_url: avatarUrl,
             timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
         };
     }).reverse();
 }
+
 
 // Helper function to format dates
 function formatDate(date) {
