@@ -127,46 +127,20 @@ app.get('/error', (req, res) => {
 
 
 // Additional routes that you must implement
-
-/*
-app.get('/post/:id', (req, res) => {
-    // TODO: Render post detail page
-});
-*/
-
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
     addPost(req.body.title, req.body.postBody, getCurrentUser(req));
     res.redirect("/");
 });
-
 app.post('/like/:id', isAuthenticated, (req, res) => {
     updatePostLikes(req, res);
 });
-
 app.get('/profile', isAuthenticated, (req, res) => {
-    const user = getCurrentUser(req);
-    if (user) {
-        const userPosts = posts.filter(post => post.username === user.username);
-        res.render('profile', { user, posts: userPosts });
-    } else {
-        res.redirect('/login');
-    }
+   renderProfile(req, res);
 });
-
 app.get('/avatar/:username', (req, res) => {
-    const username = req.params.username;
-    const user = findUserByUsername(username);
-    if (user) {
-        const firstLetter = username.charAt(0).toUpperCase();
-        const avatarBuffer = generateAvatar(firstLetter);
-        res.setHeader('Content-Type', 'image/png');
-        res.send(avatarBuffer);
-    } else {
-        res.status(404).send('User not found');
-    }
+    handleAvatar(req, res);
 });
-
 app.post('/register', (req, res) => {
     // TODO: Register a new user
     registerUser(req, res);
@@ -182,20 +156,18 @@ app.get('/logout', (req, res) => {
 
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     const postId = parseInt(req.params.id, 10);
-    const user = getCurrentUser(req);
+    const userId = req.session.userId;
+    const user = findUserById(userId);
+    const post = findPostById(postId);
 
-    // Find the post and check if the current user is the owner
-    const postIndex = posts.findIndex(post => post.id === postId && post.username === user.username);
-
-    if (postIndex !== -1) {
-        // Remove the post from the array
-        posts.splice(postIndex, 1);
-        res.json({ success: true });
+    // Check if the post exists and if the current user is the owner
+    if (post && post.username === user.username) {
+        posts = posts.filter(post => post.id !== postId);
+        res.status(200).send("Post deleted");
     } else {
-        res.json({ success: false, message: "Post not found or you're not authorized to delete this post" });
+        res.status(401).send("Post not found or you're not authorized to delete this post");
     }
 });
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Server Activation
@@ -228,18 +200,18 @@ function addLikedPost(userId, postId) {
         user.likedPosts.push(postId);
     }
 }
-
 function hasLikedPost(userId, postId) {
     const user = findUserById(userId);
     return user && user.likedPosts.includes(postId);
 }
-
 function findUserByUsername(username) {
     return users.find(user => user.username === username);
 }
-
 function findUserById(userId) {
     return users.find(user => user.id === userId);
+}
+function findPostById(postId) {
+    return posts.find((post) => post.id == postId);
 }
 
 // Function to add a new user
@@ -318,33 +290,39 @@ function renderProfile(req, res) {
 function updatePostLikes(req, res) {
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
-
-    // Find the post
-    const post = posts.find(post => post.id === postId);
+    const post = findPostById(postId);
 
     if (!post) {
-        return res.json({ success: false, message: "Post not found" });
+        return res.status(404).json({ success: false, message: "Post not found" });
     }
-
     if (post.username === user.username) {
-        return res.json({ success: false, message: "You cannot like your own post" });
+        return res.status(400).json({ success: false, message: "You cannot like your own post" });
     }
-
     if (hasLikedPost(user.id, postId)) {
-        return res.json({ success: false, message: "You have already liked this post" });
+        return res.status(400).json({ success: false, message: "You have already liked this post" });
     }
 
     // Increment the like count and save the post ID in the user's liked posts
     post.likes += 1;
     addLikedPost(user.id, postId);
 
-    return res.json({ success: true, likes: post.likes });
+    return res.status(200).json({ success: true, likes: post.likes });
 }
 
 
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
     // TODO: Generate and serve the user's avatar image
+    const username = req.params.username;
+    const user = findUserByUsername(username);
+    if (user) {
+        const firstLetter = username.charAt(0).toUpperCase();
+        const avatarBuffer = generateAvatar(firstLetter);
+        res.setHeader('Content-Type', 'image/png');
+        res.send(avatarBuffer);
+    } else {
+        res.status(404).send('User not found');
+    }
 }
 
 // Function to get the current user from session

@@ -1,8 +1,10 @@
 {{! Partial for a single post }}
 <div class="post">
+
     <div class="post-avatar">
         <img src="{{this.avatar_url}}" alt="User Avatar" />
     </div>
+    
     <div class="post-content preserve-newlines">
         <!-- Title and Buttons -->
         <div class="post-header">
@@ -36,50 +38,47 @@
         });
     });
 
-    function handleDeleteClick(event) {
+    async function handleDeleteClick(event) {
         const buttonElement = event.target.closest('.btn-delete');
         const postId = buttonElement.getAttribute('data-id');
 
-        fetch(`/delete/${postId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ postId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Remove the post element from the DOM
+        try {
+            const response = await fetch(`/delete/${postId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const message = await response.text();
+            if (response.ok && message === "Post deleted") {
                 buttonElement.closest('.post').remove();
             } else {
-                alert(data.message);
+                alert(message);
             }
-        })
-        .catch(error => console.error('Error:', error));
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        }
     }
 
-    function handleLikeClick(event) {
-        const buttonElement = event.target.closest('.btn-like');
-        const postId = buttonElement.getAttribute('data-id');
+    async function handleLikeClick(event) {
+    const buttonElement = event.target.closest('.btn-like');
+    const postId = buttonElement.getAttribute('data-id');
 
-        fetch(`/like/${postId}`, {
+    try {
+        const response = await fetch(`/like/${postId}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ postId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update the like count in the DOM
-                const likeCountElement = buttonElement.closest('.post').querySelector('.like-count');
-                likeCountElement.textContent = `${data.likes} Likes`;
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            // Update the like count in the DOM
+            const likeCountElement = buttonElement.closest('.post').querySelector('.like-count');
+            likeCountElement.textContent = `${data.likes} Likes`;
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error('Error liking post:', error);
     }
+}
 </script>
