@@ -309,6 +309,30 @@ app.get('/logoutCallback', (req, res) => {
     res.redirect('/');
 });
 
+// render posts by requested option
+app.post('/sortOption', (req, res) => {
+    const sortOption = req.body['sort-option'];
+    let posts;
+    (async function () {
+        if (sortOption === "most-liked") {
+            posts = await db.all(`SELECT * FROM posts \
+            ORDER BY likes DESC`);
+            posts = await processPosts(posts);
+        } else if (sortOption == "most-recent") {
+            posts = await getPosts();
+        } else {
+            // res.status(400).send("no such option");
+            return;
+        }
+        const user = await getCurrentUser(req) || {};
+        res.render('home', { posts, user });
+        // res.status(200).send("sucess");
+    })();
+    // const user = undefined;
+    // posts = {};
+    // res.render('home', { posts, user });
+});
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Server Activation
@@ -519,7 +543,7 @@ async function getPosts() {
     //     };
     // }).reverse();
 
-    const posts = await db.all('SELECT * FROM posts');
+    let posts = await db.all('SELECT * FROM posts');
     // postList =  posts.map(async post => {
     //         const user = await findUserByUsername(post.username, db);
     //         const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${post.username}`;
@@ -529,13 +553,7 @@ async function getPosts() {
     //             timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
     //         };
     //     }).reverse();
-    for (let i = 0; i < posts.length; i++) {
-        const user = await findUserByUsername(posts[i].username);
-        const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${posts[i].username}`;
-        posts[i].username = user.username;
-        posts[i].avatar_url = avatarUrl;
-        posts[i].timestamp = formatDate(posts[i].timestamp);
-    }
+    posts = await processPosts(posts);
     return posts.reverse();
 }
 
@@ -544,6 +562,17 @@ async function getPosts() {
 function formatDate(date) {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true };
     return new Date(date).toLocaleString('en-US', options).replace(',', '');
+}
+
+async function processPosts(posts) {
+    for (let i = 0; i < posts.length; i++) {
+        const user = await findUserByUsername(posts[i].username);
+        const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${posts[i].username}`;
+        posts[i].username = user.username;
+        posts[i].avatar_url = avatarUrl;
+        posts[i].timestamp = formatDate(posts[i].timestamp);
+    }
+    return posts;
 }
 
 

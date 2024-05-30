@@ -22,6 +22,14 @@
     {{/if}}
 
     <section class="posts-list">
+        {{!-- option to sort posts --}}
+        <form id="sort-option-form" action="/sortOption" method="POST">
+        <h2>Sort By</h2>
+        <input type="radio" id="recency-radio" name="sort-option" value="most-recent">
+        <label>most recent</label>
+        <input type="radio" id="liked-radio" name="sort-option" value="most-liked">
+        <label>most liked</label>
+        </form>
         <!-- recent posts -->
         {{#if posts.length}}
         <ul>
@@ -44,6 +52,29 @@ document.addEventListener("DOMContentLoaded", function () {
     // Fetch emojis on page load
     fetchEmojis();
 });
+
+document.getElementById("recency-radio").addEventListener("click", setSortingOption);
+document.getElementById("liked-radio").addEventListener("click", setSortingOption);
+async function setSortingOption(event) {
+    const sortOption = event.target.value;
+    console.log(sortOption);
+    // document.getElementById("sort-option-form").setAttribute("value", sortOption);
+    document.getElementById("sort-option-form").submit();
+    /*try {
+        const response = await fetch("/sortOption", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({'sort-option': sortOption})
+            }
+        );
+        if (response.ok) {
+            event.target.setAttribute("checked", "checked");
+            console.log(response);
+        }
+    } catch (error) {
+        console.error('Error refreshing page:', error);
+    }*/
+}
 
 function toggleEmojiPanel() {
     const container = document.getElementById('emoji-container');
