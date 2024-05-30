@@ -1,3 +1,5 @@
 scaffold/node_modules/
 scaffold/package-lock.json
 scaffold/package.json
+scaffold/populatedb.js
+scaffold/showdb.js
