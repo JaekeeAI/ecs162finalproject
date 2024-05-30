@@ -5,6 +5,18 @@ const { createCanvas } = require('canvas');
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const dotenv = require('dotenv');
+
+// Load environment variables from .env file
+dotenv.config();
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,7 +25,7 @@ const sqlite3 = require('sqlite3');
 
 const app = express();
 const PORT = 3000;
-const dbFileName = 'your_database_file.db';
+const dbFileName = 'blog.db';
 let db;
 
 // Ensure the database is initialized before starting the server.
@@ -27,6 +39,24 @@ initializeDB().then(() => {
 ).catch(err => {
     console.error('Failed to initialize the database:', err);
 });
+
+passport.use(new GoogleStrategy({
+    clientID: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    callbackURL: `http://localhost:${PORT}/auth/google/callback`
+}, (token, tokenSecret, profile, done) => {
+    return done(null, profile);
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+    done(null, obj);
+});
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Handlebars Helpers
@@ -94,6 +124,10 @@ app.use(
     })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+
 // Replace any of these variables below with constants for your application. These variables
 // should be used in your template files. 
 // 
@@ -148,7 +182,6 @@ app.get('/error', (req, res) => {
     res.render('error');
 });
 
-
 // Additional routes that you must implement
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
@@ -156,7 +189,6 @@ app.post('/posts', (req, res) => {
         await addPost(req.body.title, req.body.postBody, await getCurrentUser(req));
         res.redirect("/");
     })();
-    
 });
 app.post('/like/:id', isAuthenticated, (req, res) => {
     (async function () {
@@ -185,10 +217,13 @@ app.post('/login', (req, res) => {
         await loginUser(req, res);
     })();
 });
+
+/*
 app.get('/logout', (req, res) => {
     // TODO: Logout the user
     logoutUser(req, res);
 });
+*/
 
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     const postId = parseInt(req.params.id, 10);
@@ -210,6 +245,70 @@ app.post('/delete/:id', isAuthenticated, (req, res) => {
         }
     })();
 });
+
+// Google Login Route
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
+
+// Google Callback Route
+app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    async (req, res) => {
+        // Extract user's Google ID
+        const googleId = req.user.id;
+        const user = await findUserByGoogleId(googleId);
+        
+        if (user) {
+            // User exists, set session variables
+            req.session.userId = user.id;
+            req.session.loggedIn = true;
+            res.redirect('/');
+        } else {
+            // User does not exist, redirect to username registration
+            req.session.hashedGoogleId = googleId;
+            res.redirect('/registerUsername');
+        }
+    }
+);
+
+// Username Registration Route
+app.get('/registerUsername', (req, res) => {
+    res.render('registerUsername', { error: req.query.error });
+});
+
+// Register Username POST Route
+app.post('/registerUsername', async (req, res) => {
+    const username = req.body.username;
+    const hashedGoogleId = req.session.hashedGoogleId;
+
+    if (await findUserByUsername(username)) {
+        res.redirect('/registerUsername?error=Username+taken');
+    } else {
+        await addUserWithGoogleId(username, hashedGoogleId);
+        res.redirect('/login');
+    }
+});
+
+// Logout Route
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error destroying session', err);
+            res.redirect('/error');
+        } else {
+            res.redirect('/googleLogout');
+        }
+    });
+});
+
+// Logout Confirmation Route
+app.get('/googleLogout', (req, res) => {
+    res.render('googleLogout');
+});
+
+app.get('/logoutCallback', (req, res) => {
+    res.redirect('/');
+});
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Server Activation
@@ -277,22 +376,27 @@ async function findPostById(postId) {
 }
 
 
-// Function to add a new user
-async function addUser(username) {
+async function addUserWithGoogleId(username, googleId) {
     const avatarUrl = `/avatar/${username}`;
     const newUser = {
         username: username,
         avatar_url: avatarUrl,
         memberSince: new Date(),
-        hashedGoogleId: username, // fix me
-        likedPosts: [] // add this col to the database
+        hashedGoogleId: googleId,
     };
-    await db.run('INSERT INTO users \
-    (username, hashedGoogleId, avatar_url, memberSince) \
-    VALUES (?, ?, ?, ?)',
-    [newUser.username, newUser.hashedGoogleId, newUser.avatar_url, newUser.memberSince]);
-    // users.push(newUser);
+    await db.run('INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
+        [newUser.username, newUser.hashedGoogleId, newUser.avatar_url, newUser.memberSince]);
 }
+
+async function findUserByGoogleId(googleId) {
+    try {
+        return await db.get(`SELECT * FROM users WHERE hashedGoogleId = ?`, [googleId]);
+    } catch (error) {
+        console.error("Failed to find user by Google ID", error);
+        return undefined;
+    }
+}
+
 
 
 // Middleware to check if user is authenticated

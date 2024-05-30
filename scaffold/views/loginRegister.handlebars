@@ -16,13 +16,7 @@
                 {{#if loginError}}
                     <p class="error">{{loginError}}</p>
                 {{/if}}
-                <form action="/login" method="POST">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
+                <a href="/auth/google" class="btn btn-primary">Login with Google</a>
             </section>
             <hr>
             <section class="register-area">
