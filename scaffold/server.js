@@ -14,8 +14,7 @@ dotenv.config();
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-
-
+const EMOJI_API = process.env.EMOJI_API;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -25,7 +24,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 const app = express();
 const PORT = 3000;
-const dbFileName = 'blog.db';
+const dbFileName = 'testlike.db';
 let db;
 let sortOrder = "most-recent";
 
@@ -56,7 +55,6 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((obj, done) => {
     done(null, obj);
 });
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +106,6 @@ app.engine(
     })
 );
 
-
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
@@ -128,7 +125,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 // Replace any of these variables below with constants for your application. These variables
 // should be used in your template files. 
 // 
@@ -138,6 +134,7 @@ app.use((req, res, next) => {
     res.locals.postNeoType = 'Post';
     res.locals.loggedIn = req.session.loggedIn || false;
     res.locals.userId = req.session.userId || '';
+    res.locals.EMOJI_API = EMOJI_API;
     next();
 });
 
@@ -185,7 +182,7 @@ app.get('/register', (req, res) => {
 // Login route GET route is used for error response from login
 //
 app.get('/login', (req, res) => {
-    res.render('loginRegister', { loginError: req.query.error });
+    res.render('loginRegister', { layout: false, loginError: req.query.error });
 });
 
 // Error route: render error page
@@ -241,7 +238,6 @@ app.post('/delete/:id', isAuthenticated, (req, res) => {
     const postId = parseInt(req.params.id, 10);
     const userId = req.session.userId;
     
-
     (async function() {
         const user = await findUserById(userId);
         const post = await findPostById(postId);
@@ -296,7 +292,13 @@ app.post('/registerUsername', async (req, res) => {
         res.redirect('/registerUsername?error=Username+taken');
     } else {
         await addUserWithGoogleId(username, hashedGoogleId);
-        res.redirect('/login');
+
+        // Automatically log in the user
+        const user = await findUserByUsername(username);
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+
+        res.redirect('/');
     }
 });
 
@@ -332,8 +334,6 @@ app.post('/sortOption', (req, res) => {
 // Server Activation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -363,7 +363,6 @@ function hasLikedPost(userId, postId) {
     const user = findUserById(userId);
     return user && user.likedPosts.includes(postId);
 }
-
 async function findUserByUsername(username) {
     try {
         return await db.get(`SELECT * FROM users \
@@ -393,7 +392,6 @@ async function findPostById(postId) {
     where id = ${postId}`);
 }
 
-
 async function addUserWithGoogleId(username, googleId) {
     const avatarUrl = `/avatar/${username}`;
     const newUser = {
@@ -414,8 +412,6 @@ async function findUserByGoogleId(googleId) {
         return undefined;
     }
 }
-
-
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
@@ -488,21 +484,22 @@ async function updatePostLikes(req, res) {
     if (post.username === user.username) {
         return res.status(400).json({ success: false, message: "You cannot like your own post" });
     }
-    // if (hasLikedPost(user.id, postId)) {
-    //     return res.status(400).json({ success: false, message: "You have already liked this post" });
-    // }
 
-    // Increment the like count and save the post ID in the user's liked posts
-    const newLikeCount = post.likes + 1;
-    await db.run(`UPDATE posts \
-    SET likes = ${newLikeCount} \
-    WHERE id = ${postId}`);
-    // addLikedPost(user.id, postId);
+    // Check if the user has already liked this post
+    const like = await db.get('SELECT * FROM likes WHERE user_id = ? AND post_id = ?', [user.id, postId]);
 
-
-    return res.status(200).json({ success: true, likes: newLikeCount });
+    if (like) {
+        // User has already liked the post, so unlike it
+        await db.run('DELETE FROM likes WHERE user_id = ? AND post_id = ?', [user.id, postId]);
+        await db.run('UPDATE posts SET likes = likes - 1 WHERE id = ?', [postId]);
+        return res.status(200).json({ success: true, likes: post.likes - 1, message: "Post unliked" });
+    } else {
+        // User has not liked the post, so like it
+        await db.run('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', [user.id, postId]);
+        await db.run('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postId]);
+        return res.status(200).json({ success: true, likes: post.likes + 1, message: "Post liked" });
+    }
 }
-
 
 // Function to handle avatar generation and serving
 async function handleAvatar(req, res) {
@@ -551,7 +548,6 @@ async function getPosts() {
     return posts.reverse();
 }
 
-
 // Helper function to format dates
 function formatDate(date) {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true };
@@ -568,7 +564,6 @@ async function processPosts(posts) {
     }
     return posts;
 }
-
 
 // Function to add a new post
 async function addPost(title, content, user) {
@@ -591,7 +586,6 @@ async function addPost(title, content, user) {
     (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
     [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes]);
 }
-
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {

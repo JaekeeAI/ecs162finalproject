@@ -60,25 +60,29 @@
     }
 
     async function handleLikeClick(event) {
-    const buttonElement = event.target.closest('.btn-like');
-    const postId = buttonElement.getAttribute('data-id');
+        const buttonElement = event.target.closest('.btn-like');
+        const postId = buttonElement.getAttribute('data-id');
 
-    try {
-        const response = await fetch(`/like/${postId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        });
+        try {
+            const response = await fetch(`/like/${postId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
 
-        const data = await response.json();
-        if (response.ok && data.success) {
-            // Update the like count in the DOM
-            const likeCountElement = buttonElement.closest('.post').querySelector('.like-count');
-            likeCountElement.textContent = `${data.likes} Likes`;
-        } else {
-            alert(data.message);
+            const data = await response.json();
+            if (response.ok && data.success) {
+                // Update the like count in the DOM
+                const likeCountElement = buttonElement.closest('.post').querySelector('.like-count');
+                likeCountElement.textContent = `${data.likes} Likes`;
+
+                // Toggle the like/unlike state in the button
+                buttonElement.querySelector('i').classList.toggle('liked', data.message === "Post liked");
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error liking post:', error);
         }
-    } catch (error) {
-        console.error('Error liking post:', error);
     }
-}
+
 </script>

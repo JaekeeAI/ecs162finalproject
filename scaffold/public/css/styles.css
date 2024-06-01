@@ -91,66 +91,6 @@ footer {
 }
 
 /* Login/Register Styles */
-.login-register {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-start;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.login-register section {
-    width: 45%;
-    padding: 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.login-register h2 {
-    margin-top: 0;
-    color: #4A90E2;
-}
-
-.error {
-    color: red;
-    font-weight: bold;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-button {
-    background-color: #4A90E2;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    width: 100%;
-    margin-top: 10px;
-    font-size: 16px;
-}
-
-button:hover {
-    background-color: #357ABD;
-}
 
 /* Home and Posts Styles */
 .container {
