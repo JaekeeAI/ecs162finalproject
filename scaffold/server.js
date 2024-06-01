@@ -27,6 +27,7 @@ const app = express();
 const PORT = 3000;
 const dbFileName = 'blog.db';
 let db;
+let sortOrder = "most-recent";
 
 // Ensure the database is initialized before starting the server.
 initializeDB().then(() => {
@@ -158,9 +159,20 @@ app.get('/', (req, res) => {
     // res.render('home', { posts, user });
 
     (async function() {
-        const posts = await getPosts();
+        let posts;
         const user = await getCurrentUser(req) || {};
-        res.render('home', { posts, user });
+        // render the posts based on the state of sortOrder
+        if (sortOrder === "most-liked") {
+            posts = await db.all(`SELECT * FROM posts \
+            ORDER BY likes DESC`);
+            posts = await processPosts(posts);
+        } else if (sortOrder == "most-recent") {
+            posts = await getPosts();
+        } else {
+            res.status(400).send("no such option");
+            return;
+        }
+        res.render('home', { posts, user, sortOrder });
     })();
 });
 
@@ -311,26 +323,8 @@ app.get('/logoutCallback', (req, res) => {
 
 // render posts by requested option
 app.post('/sortOption', (req, res) => {
-    const sortOption = req.body['sort-option'];
-    let posts;
-    (async function () {
-        if (sortOption === "most-liked") {
-            posts = await db.all(`SELECT * FROM posts \
-            ORDER BY likes DESC`);
-            posts = await processPosts(posts);
-        } else if (sortOption == "most-recent") {
-            posts = await getPosts();
-        } else {
-            // res.status(400).send("no such option");
-            return;
-        }
-        const user = await getCurrentUser(req) || {};
-        res.render('home', { posts, user });
-        // res.status(200).send("sucess");
-    })();
-    // const user = undefined;
-    // posts = {};
-    // res.render('home', { posts, user });
+    sortOrder = req.body['sort-option'];
+    res.redirect('/');
 });
 
 
@@ -381,7 +375,7 @@ async function findUserByUsername(username) {
     // return users.find(user => user.username === username);
 }
 async function findUserById(userId) {
-    console.log(`the user id is: ${userId}`);
+    // console.log(`the user id is: ${userId}`);
     if (userId == undefined) {
         return undefined;
     }

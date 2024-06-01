@@ -417,6 +417,16 @@ button:hover {
     padding: 10px 0;
 }
 
+#sort-option-form h2{
+    text-align: center;
+}
+
+.radio-container{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
 
 /* Responsive Styles */
 

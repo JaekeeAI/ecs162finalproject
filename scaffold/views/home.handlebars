@@ -24,11 +24,15 @@
     <section class="posts-list">
         {{!-- option to sort posts --}}
         <form id="sort-option-form" action="/sortOption" method="POST">
-        <h2>Sort By</h2>
-        <input type="radio" id="recency-radio" name="sort-option" value="most-recent">
-        <label>most recent</label>
-        <input type="radio" id="liked-radio" name="sort-option" value="most-liked">
-        <label>most liked</label>
+            <h2>Sort By</h2>
+            <div class="radio-container">
+                <input type="radio" id="recency-radio" name="sort-option" value="most-recent"
+                {{#ifCond sortOrder "most-recent"}} checked="checked" {{/ifCond}}>
+                <label>most recent</label>
+                <input type="radio" id="liked-radio" name="sort-option" value="most-liked"
+                {{#ifCond sortOrder "most-liked"}} checked="checked" {{/ifCond}}>
+                <label>most liked</label>
+            </div>
         </form>
         <!-- recent posts -->
         {{#if posts.length}}
@@ -57,7 +61,6 @@ document.getElementById("recency-radio").addEventListener("click", setSortingOpt
 document.getElementById("liked-radio").addEventListener("click", setSortingOption);
 async function setSortingOption(event) {
     const sortOption = event.target.value;
-    console.log(sortOption);
     // document.getElementById("sort-option-form").setAttribute("value", sortOption);
     document.getElementById("sort-option-form").submit();
     /*try {
@@ -74,6 +77,7 @@ async function setSortingOption(event) {
     } catch (error) {
         console.error('Error refreshing page:', error);
     }*/
+    event.target.setAttribute("checked", "checked");
 }
 
 function toggleEmojiPanel() {
