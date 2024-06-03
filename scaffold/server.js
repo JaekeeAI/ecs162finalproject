@@ -26,7 +26,8 @@ const app = express();
 const PORT = 3000;
 const dbFileName = 'testlike.db';
 let db;
-let sortOrder = "most-recent";
+let sortOrder = "timestamp";
+let viewOption = "";
 
 // Ensure the database is initialized before starting the server.
 initializeDB().then(() => {
@@ -159,15 +160,25 @@ app.get('/', (req, res) => {
         let posts;
         const user = await getCurrentUser(req) || {};
         // render the posts based on the state of sortOrder
-        if (sortOrder === "most-liked") {
-            posts = await db.all(`SELECT * FROM posts \
-            ORDER BY likes DESC`);
+
+        if (viewOption) {
+            try {
+                posts = await db.all(`SELECT * FROM posts \
+                WHERE username = '${viewOption}' \
+                ORDER BY ${sortOrder} DESC`);
+            } catch (error) {
+                posts = [];
+            }
+            
             posts = await processPosts(posts);
-        } else if (sortOrder == "most-recent") {
-            posts = await getPosts();
         } else {
-            res.status(400).send("no such option");
-            return;
+            try {
+                posts = await db.all(`SELECT * FROM posts \
+                ORDER BY ${sortOrder} DESC`);
+            } catch (error) {
+                posts = [];
+            }
+            posts = await processPosts(posts);
         }
         res.render('home', { posts, user, sortOrder });
     })();
@@ -326,6 +337,14 @@ app.get('/logoutCallback', (req, res) => {
 // render posts by requested option
 app.post('/sortOption', (req, res) => {
     sortOrder = req.body['sort-option'];
+    console.log("the sort order is:", sortOrder);
+    res.redirect('/');
+});
+
+// set viewoption of posts (all or a certain user)
+app.post('/viewOption', (req, res) => {
+    viewOption = req.body['username'];
+    console.log("the view option is " + viewOption);
     res.redirect('/');
 });
 

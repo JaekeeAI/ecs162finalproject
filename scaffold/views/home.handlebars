@@ -22,15 +22,23 @@
     {{/if}}
 
     <section class="posts-list">
+        {{!-- option to display posts from a certain user --}}
+        <form id="view-option-form" action="/viewOption" method="POST">
+            <label>search posts from user</label>
+            <input type="text" id="search-user-posts" name="username"
+            placeholder="some username">
+            <button type="submit">search</button>
+            <button id="show-all-posts">show all posts</button>
+        </form>
         {{!-- option to sort posts --}}
         <form id="sort-option-form" action="/sortOption" method="POST">
             <h2>Sort By</h2>
             <div class="radio-container">
-                <input type="radio" id="recency-radio" name="sort-option" value="most-recent"
-                {{#ifCond sortOrder "most-recent"}} checked="checked" {{/ifCond}}>
+                <input type="radio" id="recency-radio" name="sort-option" value="timestamp"
+                {{#ifCond sortOrder "timestamp"}} checked="checked" {{/ifCond}}>
                 <label>most recent</label>
-                <input type="radio" id="liked-radio" name="sort-option" value="most-liked"
-                {{#ifCond sortOrder "most-liked"}} checked="checked" {{/ifCond}}>
+                <input type="radio" id="liked-radio" name="sort-option" value="likes"
+                {{#ifCond sortOrder "likes"}} checked="checked" {{/ifCond}}>
                 <label>most liked</label>
             </div>
         </form>
@@ -59,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById("recency-radio").addEventListener("click", setSortingOption);
 document.getElementById("liked-radio").addEventListener("click", setSortingOption);
+document.getElementById("show-all-posts").addEventListener("click", setViewOption);
 async function setSortingOption(event) {
     const sortOption = event.target.value;
     // document.getElementById("sort-option-form").setAttribute("value", sortOption);
@@ -77,7 +86,11 @@ async function setSortingOption(event) {
     } catch (error) {
         console.error('Error refreshing page:', error);
     }*/
-    event.target.setAttribute("checked", "checked");
+}
+
+async function setViewOption(event) {
+    document.getElementById("search-user-posts").value = "";
+    document.getElementById("view-option-form").submit();
 }
 
 function toggleEmojiPanel() {
