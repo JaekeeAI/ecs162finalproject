@@ -207,13 +207,15 @@ app.get('/error', (req, res) => {
 });
 
 // Additional routes that you must implement
-app.post('/posts', upload.single('image'), (req, res) => {
+app.post('/posts', upload.fields([{ name: 'image' }, { name: 'video' }]), (req, res) => {
     (async function () {
-        const imageBuffer = req.file ? req.file.buffer : null;
-        await addPost(req.body.title, req.body.postBody, await getCurrentUser(req), imageBuffer);
+        const imageBuffer = req.files['image'] ? req.files['image'][0].buffer : null;
+        const videoBuffer = req.files['video'] ? req.files['video'][0].buffer : null;
+        await addPost(req.body.title, req.body.postBody, await getCurrentUser(req), imageBuffer, videoBuffer);
         res.redirect("/");
     })();
 });
+
 
 
 app.post('/like/:id', isAuthenticated, (req, res) => {
@@ -593,11 +595,16 @@ async function processPosts(posts) {
         if (posts[i].image) {
             posts[i].image = posts[i].image.toString('base64');
         }
+
+        // Convert video buffer to Base64 string
+        if (posts[i].video) {
+            posts[i].video = posts[i].video.toString('base64');
+        }
     }
     return posts;
 }
 
-async function addPost(title, content, user, image) {
+async function addPost(title, content, user, image, video) {
     const newPost = {
         title: title,
         content: content,
@@ -605,12 +612,14 @@ async function addPost(title, content, user, image) {
         timestamp: new Date().toISOString(),
         likes: 0,
         avatar_url: user.avatar_url || `/avatar/${user.username}`,
-        image: image
+        image: image,
+        video: video
     };
 
-    await db.run('INSERT INTO posts (title, content, username, timestamp, likes, image) VALUES (?, ?, ?, ?, ?, ?)',
-        [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes, newPost.image]);
+    await db.run('INSERT INTO posts (title, content, username, timestamp, likes, image, video) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes, newPost.image, newPost.video]);
 }
+
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {

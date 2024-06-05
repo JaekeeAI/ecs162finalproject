@@ -23,6 +23,13 @@
         {{#if this.image}}
             <img src="data:image/png;base64,{{this.image}}" alt="Post Image">
         {{/if}}
+        <!-- Display video if available -->
+        {{#if this.video}}
+            <video class="post-video" controls>
+                <source src="data:video/mp4;base64,{{this.video}}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {{/if}}
         <!-- Post Footer -->
         <div class="post-footer">
             <span>Posted by {{this.username}} on {{formatDate this.timestamp}}</span>
@@ -91,4 +98,10 @@
 
 </script>
 
-
+<style>
+.post-video {
+    width: 100%;
+    max-width: 600px; /* You can adjust this to fit your design */
+    height: auto; /* Maintains aspect ratio */
+}
+</style>
