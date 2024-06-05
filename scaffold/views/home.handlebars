@@ -1,23 +1,24 @@
-{{! Use the main layout }}
-{{!< main }}
-
 <section class="container">
     {{#if loggedIn}}
     <div class="left-box">
-        <section class="post-form">
-            <form id="postForm" action="/posts" method="POST" onsubmit="return validateForm()">
-                <input type="text" name="title" id="title" placeholder="Title" required>
-                <textarea name="postBody" id="postBody" placeholder="What's on your mind?" required></textarea>
-                <div class="form-actions">
-                    <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
-                    <button type="submit" class="post-button">Post</button>
+        <button id="openPostFormButton" class="open-post-form-button">Create Post</button>
+        <div id="postFormPopup" class="post-form-popup" style="display: none;">
+            <section class="post-form">
+                <form id="postForm" action="/posts" method="POST" onsubmit="return validateForm()">
+                    <button type="button" class="close-button" onclick="togglePostFormPopup()">X</button>
+                    <input type="text" name="title" id="title" placeholder="Title" required>
+                    <textarea name="postBody" id="postBody" placeholder="What's on your mind?" required></textarea>
+                    <div class="form-actions">
+                        <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
+                        <button type="submit" class="post-button">Post</button>
+                    </div>
+                </form>
+                <div id="emoji-container" class="emoji-panel" style="display: none;">
+                    <input type="text" id="emoji-search" placeholder="Search emojis..." oninput="searchEmojis()">
+                    <div id="emoji-grid" class="emoji-grid"></div>
                 </div>
-            </form>
-            <div id="emoji-container" class="emoji-panel" style="display: none;">
-                <input type="text" id="emoji-search" placeholder="Search emojis..." oninput="searchEmojis()">
-                <div id="emoji-grid" class="emoji-grid"></div>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
     {{/if}}
 
@@ -31,6 +32,7 @@
             <button id="show-all-posts">show all posts</button>
         </form>
         {{!-- option to sort posts --}}
+        
         <form id="sort-option-form" action="/sortOption" method="POST">
             <h2>Sort By</h2>
             <div class="radio-container">
@@ -42,7 +44,7 @@
                 <label>most liked</label>
             </div>
         </form>
-        <!-- recent posts -->
+
         {{#if posts.length}}
         <ul>
             {{#each posts}}
@@ -55,22 +57,25 @@
     </section>
 </section>
 
-{{! JavaScript for Emoji Integration }}
 <script>
-let allEmojis = [];  // Global list to hold all emojis
+let allEmojis = []; 
 
 document.addEventListener("DOMContentLoaded", function () {
-
-    // Fetch emojis on page load
     fetchEmojis();
+    document.getElementById('openPostFormButton').addEventListener('click', togglePostFormPopup);
 });
 
 document.getElementById("recency-radio").addEventListener("click", setSortingOption);
 document.getElementById("liked-radio").addEventListener("click", setSortingOption);
 document.getElementById("show-all-posts").addEventListener("click", setViewOption);
+
+function togglePostFormPopup() {
+    const popup = document.getElementById('postFormPopup');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
 async function setSortingOption(event) {
     const sortOption = event.target.value;
-    // document.getElementById("sort-option-form").setAttribute("value", sortOption);
     document.getElementById("sort-option-form").submit();
     /*try {
         const response = await fetch("/sortOption", {
@@ -91,6 +96,7 @@ async function setSortingOption(event) {
 async function setViewOption(event) {
     document.getElementById("search-user-posts").value = "";
     document.getElementById("view-option-form").submit();
+    event.target.setAttribute("checked", "checked");
 }
 
 function toggleEmojiPanel() {
@@ -115,12 +121,12 @@ async function fetchEmojis() {
 
 function displayEmojis(emojis, limit = 200) {
     const container = document.getElementById('emoji-grid');
-    container.innerHTML = '';  // Clear previous results
+    container.innerHTML = '';  
     if (Array.isArray(emojis) && emojis.length > 0) {
         emojis.slice(0, limit).forEach(emoji => {
             const emojiElement = document.createElement('span');
             emojiElement.textContent = emoji.character;
-            emojiElement.title = emoji.slug;  // Showing the emoji name on hover
+            emojiElement.title = emoji.slug; 
             emojiElement.style.cursor = 'pointer';
             emojiElement.onclick = () => insertEmoji(emoji.character);
             container.appendChild(emojiElement);
@@ -157,3 +163,42 @@ function validateForm() {
     return true;
 }
 </script>
+
+<style>
+.open-post-form-button {
+    margin: 10px 0;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.post-form-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+</style>

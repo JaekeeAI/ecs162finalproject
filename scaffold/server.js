@@ -24,7 +24,7 @@ const EMOJI_API = process.env.EMOJI_API;
 
 const app = express();
 const PORT = 3000;
-const dbFileName = 'testlike.db';
+const dbFileName = 'test.db';
 let db;
 let sortOrder = "timestamp";
 let viewOption = "";
