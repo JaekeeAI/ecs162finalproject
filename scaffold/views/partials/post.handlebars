@@ -9,7 +9,7 @@
         <!-- Title and Buttons -->
         <div class="post-header">
             <h2>{{this.title}}</h2>
-            <div class="post-buttons">
+            <div>
                 {{#ifCond user.username this.username}}
                     <button class="btn-delete" data-id="{{this.id}}"><i class="fas fa-trash-alt"></i> Delete</button>
                 {{else}}
@@ -86,3 +86,5 @@
     }
 
 </script>
+
+
