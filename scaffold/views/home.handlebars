@@ -29,11 +29,15 @@
                     <button type="button" class="close-button" onclick="togglePostFormPopup()">X</button>
                     <input type="text" name="title" id="title" placeholder="Title" required>
                     <textarea name="postBody" id="postBody" placeholder="What's on your mind?" required></textarea>
+                    <div class="file-inputs">
+                        <label for="image" class="file-label">Upload Image:</label>
+                        <input type="file" name="image" id="image" class="file-input">
+                        <label for="video" class="file-label">Upload Video:</label>
+                        <input type="file" name="video" id="video" class="file-input" accept="video/*">
+                    </div>
                     <div class="form-actions">
                         <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
                         <button type="submit" class="post-button">Post</button>
-                        <input type="file" name="image">
-                        <input type="file" name="video" accept="video/*">
                     </div>
                 </form>
                 <div id="emoji-container" class="emoji-panel" style="display: none;">
@@ -182,6 +186,7 @@ function validateForm() {
     justify-content: center;
 }
 
+
 .close-button {
     position: absolute;
     top: 10px;
@@ -248,5 +253,25 @@ function validateForm() {
 .show-all-button:hover {
     background-color: #0056b3;
 }
+
+.file-inputs {
+    margin: 10px 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-label {
+    font-weight: bold;
+}
+
+.file-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
 
 </style>
