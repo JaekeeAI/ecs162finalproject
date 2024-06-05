@@ -2,13 +2,14 @@
     {{#if loggedIn}}
 
         {{!-- option to display posts from a certain user --}}
-        <form id="view-option-form" action="/viewOption" method="POST">
-            <label>search posts from user</label>
-            <input type="text" id="search-user-posts" name="username"
-            placeholder="some username">
-            <button type="submit">search</button>
-            <button id="show-all-posts">show all posts</button>
-        </form>
+        <div class="search-user-posts-container">
+            <form id="view-option-form" action="/viewOption" method="POST" class="search-form">
+                <label for="search-user-posts" class="search-label">Search posts from user:</label>
+                <input type="text" id="search-user-posts" name="username" placeholder="some username" class="search-input">
+                <button type="submit" class="search-button">Search</button>
+                <button type="button" id="show-all-posts" class="show-all-button">Show All Posts</button>
+            </form>
+        </div>
 
         <div class="action-bar">
             <button id="openPostFormButton" class="open-post-form-button">Create Post</button>
@@ -206,4 +207,45 @@ function validateForm() {
     background-color: #fff;
     cursor: pointer;
 }
+
+.search-user-posts-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.search-input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    width: 200px;
+}
+
+.search-button,
+.show-all-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover,
+.show-all-button:hover {
+    background-color: #0056b3;
+}
+
 </style>
