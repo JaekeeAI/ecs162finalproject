@@ -19,6 +19,10 @@
         </div>
         <!-- Post Content -->
         <p>{{this.content}}</p>
+        <!-- Display image if available -->
+        {{#if this.image}}
+            <img src="data:image/png;base64,{{this.image}}" alt="Post Image">
+        {{/if}}
         <!-- Post Footer -->
         <div class="post-footer">
             <span>Posted by {{this.username}} on {{formatDate this.timestamp}}</span>

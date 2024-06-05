@@ -216,6 +216,19 @@ footer {
     border-radius: 50%;
 }
 
+.post-avatar img {
+    width: 50px; /* Adjust size as needed */
+    height: 50px;
+    border-radius: 50%;
+}
+
+.post-content img {
+    max-width: 100%; /* Ensures the image doesn't exceed the width of its container */
+    height: auto; /* Maintains aspect ratio */
+    display: block;
+    margin: 10px 0; /* Adjusts spacing around the image */
+}
+
 .post-header {
     display: flex;
     justify-content: space-between;

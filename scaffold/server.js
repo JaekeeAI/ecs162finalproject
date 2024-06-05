@@ -9,6 +9,10 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const dotenv = require('dotenv');
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 // Load environment variables from .env file
 dotenv.config();
 
@@ -24,7 +28,7 @@ const EMOJI_API = process.env.EMOJI_API;
 
 const app = express();
 const PORT = 3000;
-const dbFileName = 'test.db';
+const dbFileName = 'test3.db';
 let db;
 let sortOrder = "timestamp";
 let viewOption = "";
@@ -203,13 +207,15 @@ app.get('/error', (req, res) => {
 });
 
 // Additional routes that you must implement
-app.post('/posts', (req, res) => {
-    // TODO: Add a new post and redirect to home
+app.post('/posts', upload.single('image'), (req, res) => {
     (async function () {
-        await addPost(req.body.title, req.body.postBody, await getCurrentUser(req));
+        const imageBuffer = req.file ? req.file.buffer : null;
+        await addPost(req.body.title, req.body.postBody, await getCurrentUser(req), imageBuffer);
         res.redirect("/");
     })();
 });
+
+
 app.post('/like/:id', isAuthenticated, (req, res) => {
     (async function () {
         await updatePostLikes(req, res);
@@ -367,6 +373,8 @@ app.post('/viewOption', (req, res) => {
 //     { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
 // ];
 
+
+
 async function initializeDB() {
     db = await sqlite.open({filename: dbFileName, driver: sqlite3.Database});
 }
@@ -479,6 +487,24 @@ function logoutUser(req, res) {
     });
 }
 
+app.get('/postImage/:id', async (req, res) => {
+    try {
+        const postId = parseInt(req.params.id, 10);
+        const post = await findPostById(postId);
+
+        if (post && post.image) {
+            res.setHeader('Content-Type', 'image/png');
+            res.send(post.image);
+        } else {
+            res.status(404).send('Image not found');
+        }
+    } catch (error) {
+        console.error('Error fetching post image:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
 // Function to render the profile page
 async function renderProfile(req, res) {
     const user = await getCurrentUser(req);
@@ -543,29 +569,11 @@ async function getCurrentUser(req) {
 
 // Function to get all posts, sorted by latest first
 async function getPosts() {
-    // return posts.map(post => {
-    //     const user = findUserByUsername(post.username);
-    //     const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${post.username}`;
-    //     return {
-    //         ...post,
-    //         avatar_url: avatarUrl,
-    //         timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
-    //     };
-    // }).reverse();
-
     let posts = await db.all('SELECT * FROM posts');
-    // postList =  posts.map(async post => {
-    //         const user = await findUserByUsername(post.username, db);
-    //         const avatarUrl = user && user.avatar_url ? user.avatar_url : `/avatar/${post.username}`;
-    //         return {
-    //             ...post,
-    //             avatar_url: avatarUrl,
-    //             timestamp: formatDate(post.timestamp) // Ensure timestamp is formatted
-    //         };
-    //     }).reverse();
     posts = await processPosts(posts);
     return posts.reverse();
 }
+
 
 // Helper function to format dates
 function formatDate(date) {
@@ -580,30 +588,28 @@ async function processPosts(posts) {
         posts[i].username = user.username;
         posts[i].avatar_url = avatarUrl;
         posts[i].timestamp = formatDate(posts[i].timestamp);
+
+        // Convert image buffer to Base64 string
+        if (posts[i].image) {
+            posts[i].image = posts[i].image.toString('base64');
+        }
     }
     return posts;
 }
 
-// Function to add a new post
-async function addPost(title, content, user) {
-    // TODO: Create a new post object and add to posts array
-    // { id: 2, title: 'Another Post', content: 'This is another sample
-    //  post.', username: 'AnotherUser', 
-    // timestamp: '2024-01-02 12:00', likes: 0 },
-
+async function addPost(title, content, user, image) {
     const newPost = {
-        // id: posts.length + 1,
         title: title,
         content: content,
         username: user.username,
         timestamp: new Date().toISOString(),
         likes: 0,
-        avatar_url: user.avatar_url || `/avatar/${user.username}`
+        avatar_url: user.avatar_url || `/avatar/${user.username}`,
+        image: image
     };
-    // posts.push(newPost);
-    await db.run('INSERT INTO posts \
-    (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
-    [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes]);
+
+    await db.run('INSERT INTO posts (title, content, username, timestamp, likes, image) VALUES (?, ?, ?, ?, ?, ?)',
+        [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes, newPost.image]);
 }
 
 // Function to generate an image avatar
