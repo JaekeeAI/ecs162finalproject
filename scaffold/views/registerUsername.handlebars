@@ -5,26 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Username</title>
     <style>
-        .container {
+        .containers {
             max-width: 500px;
             margin: 0 auto;
-            padding: 20px;
+            padding-top: 220px;
             text-align: center;
         }
         .error {
             color: red;
         }
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3c60c9;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="containers">
         <h2>Register Username</h2>
         {{#if error}}
             <p class="error">{{error}}</p>
         {{/if}}
         <form action="/registerUsername" method="POST">
             <div>
-                <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
             </div>
             <button type="submit">Register</button>
