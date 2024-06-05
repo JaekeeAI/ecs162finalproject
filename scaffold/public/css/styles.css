@@ -124,24 +124,19 @@ footer {
     align-items: center;
 }
 
-.post-form-container {
-    display: flex;
-    flex-direction: column;
-    width: 30%;
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-right: 20px;
+.post-form {
+    margin: 30px; /* Adds margin around the form container */
 }
 
 .post-form input[type="text"], 
 .post-form textarea {
     width: 100%;
     margin-bottom: 10px; /* Space between form fields */
-    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
 }
 
 .post-form textarea {
@@ -152,8 +147,6 @@ footer {
     display: flex;
     justify-content: space-between;
 }
-
-
 
 .emoji-button, .post-button {
     padding: 10px 20px;
